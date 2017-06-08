@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html ng-app="myApp">
+  <head>
+    <meta charset="UTF-8">
+    <title>Hello World!</title>
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+  </head>
+  <body ng-controller="myCtrl">
+     <div class="row">
+         <div class="col-sm-8">
+             <table class="table">
+                 <tr>
+                     <th>ID</th>
+                     <th>NAME</th>
+                     <th>QTY</th>
+                     <th>PRICE</th>
+                 </tr>
+                 <tr ng-repeat="item in items">
+                     <td>{{item.id}}</td>
+                     <td>{{item.name}}</td>
+                     <td>{{item.qty}}</td>
+                     <td>{{item.price}}</td>
+                 </tr>
+             </table>
+         </div>
+     </div>
+  </body>
+  <script src="node_modules/angular/angular.js"></script>
+  <script>
+    // You can also require other files to run in this process
+    require('./renderer.js')
+    var app = angular.module('myApp', []);
+    app.controller('myCtrl', function($scope,$interval) {
+
+            $scope.items = [];
+            getData();
+            $interval(function(){
+                getData();
+            }, 200, 1);
+            function getData()
+            {
+                   // $scope.items.splice(0,$scope.items.length);
+                    var mysql = require('mysql');
+                    // Add the credentials to access your database
+                    var connection = mysql.createConnection({
+                        host: 'localhost',
+                        user: 'root',
+                        password : '',
+                        database : 'POS'
+                    });
+                    // connect to mysql
+                    connection.connect(function(err) {
+                        // in case of error
+                        if(err){
+                            console.log(err.code);
+                            console.log(err.fatal);
+                        }
+                    });
+
+                    // Perform a query
+                    $query = 'SELECT * from stocks';
+                    connection.query($query, function(err, rows, fields) {
+                        if(err){
+                            console.log("An error ocurred performing the query.");
+                            console.log(err);
+                            return;
+                        }
+                        rows.forEach(function(row){
+                            $scope.items.push(row);
+                        });
+                        console.log("Query succesfully executed");
+                    });
+
+                    // Close the connection
+                    connection.end(function(){
+                        // The connection has been closed
+                    });
+            }
+    });
+    
+  </script>
+</html>
